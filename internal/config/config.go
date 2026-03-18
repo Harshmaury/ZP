@@ -24,11 +24,43 @@ func Load() *Config {
 
 	dropDir := os.Getenv("ZP_DROP_DIR")
 	if dropDir == "" {
-		dropDir = filepath.Join(home, "Downloads", "nexus-drop")
+		// Default to engx-drop on the Windows side if running in WSL.
+		winHome := detectWindowsHome()
+		if winHome != "" {
+			dropDir = filepath.Join(winHome, "Downloads", "engx-drop")
+		} else {
+			dropDir = filepath.Join(home, "Downloads", "engx-drop")
+		}
 	}
 
 	return &Config{
 		WorkspaceRoot: workspaceRoot,
 		DropDir:       dropDir,
 	}
+}
+
+// detectWindowsHome returns the Windows user home via /mnt/c/Users/<user>
+// when running inside WSL2. Returns empty string if not in WSL.
+func detectWindowsHome() string {
+	// Check if we are in WSL by looking for /mnt/c/Users/
+	mountBase := "/mnt/c/Users"
+	entries, err := os.ReadDir(mountBase)
+	if err != nil {
+		return ""
+	}
+	// Find the first non-system user directory.
+	skip := map[string]bool{
+		"Public": true, "Default": true, "All Users": true,
+		"Default User": true, "desktop.ini": true,
+	}
+	for _, e := range entries {
+		if e.IsDir() && !skip[e.Name()] {
+			candidate := filepath.Join(mountBase, e.Name())
+			// Verify it looks like a home dir.
+			if _, err := os.Stat(filepath.Join(candidate, "Downloads")); err == nil {
+				return candidate
+			}
+		}
+	}
+	return ""
 }

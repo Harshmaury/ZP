@@ -2,10 +2,11 @@ name: zp
 id: zp
 type: cli
 language: go
-version: 1.0.0
+version: 2.0.0
 capabilities:
   - project-packaging
   - dev-isolation
   - selective-filtering
+  - workspace-discovery
 runtime:
   provider: process

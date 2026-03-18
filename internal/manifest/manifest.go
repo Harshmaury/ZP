@@ -46,6 +46,8 @@ func LoadFromID(workspaceRoot, id string) (*Manifest, error) {
 	searchDirs := []string{
 		filepath.Join(workspaceRoot, "projects", "apps", id),
 		filepath.Join(workspaceRoot, "projects", "tools", id),
+		filepath.Join(workspaceRoot, "developer-platform"),
+		filepath.Join(workspaceRoot, "projects", "tools", id),
 		filepath.Join(workspaceRoot, id),
 	}
 	for _, dir := range searchDirs {
