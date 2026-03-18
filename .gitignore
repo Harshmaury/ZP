@@ -1,0 +1,28 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go build artifacts
+/bin/
+*.exe
+
+# Nexus runtime state — generated locally, never committed
+.nexus.yaml
+
+# zp local packaging config
+.zpignore
+
+# SQLite runtime databases — generated locally
+*.db
+*.db-shm
+*.db-wal
+
+# Backup files
+*.bak
+*.orig
+
+# OS
+.DS_Store
+Thumbs.db
