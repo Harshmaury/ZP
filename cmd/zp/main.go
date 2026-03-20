@@ -346,7 +346,7 @@ EXAMPLES
   zp list                  discover all projects in workspace
   zp status                show projects + last zip date
   zp dev forge             isolated forge sandbox → /tmp/zp-dev/
-  zp --path ~/workspace/developer-platform    package by explicit path
+  zp --path ~/workspace/projects/engx/governance    package by explicit path
   zp nexus --out /tmp      output to /tmp instead of drop dir
 
 CONFIGURATION
