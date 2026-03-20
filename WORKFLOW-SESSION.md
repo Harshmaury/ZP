@@ -1,52 +1,56 @@
 # WORKFLOW-SESSION.md
-# Session: ZP-v2-advanced-packaging
-# Date: 2026-03-17
+# Session: ZP-fix-manifest-loadfromid
+# Date: 2026-03-20
 
-## What changed — zp v2.0.0
+## What changed — remove LoadFromID dead code
 
-Major upgrade. 10 gaps fixed from deep research on actual codebase.
+LoadFromID in internal/manifest/manifest.go contained hardcoded search
+paths that assumed the old workspace layout (projects/apps/, projects/tools/).
+The actual workspace is projects/engx/services/. Any zp command that missed
+the registry scan would fall through to LoadFromID and fail to find the project.
 
-## Changes vs v1.0.0
+LoadFromID was marked as a backwards-compat fallback, but the registry scan
+(registry.Scan) already performs a depth-4 walk across the entire workspace
+and finds any project with a nexus.yaml regardless of directory structure.
+The fallback was dead code that silently broke under workspace reorganisation.
 
-### New commands
-- zp list / zp ls    — discover all nexus.yaml projects in workspace
-- zp status / zp st  — list projects + last ZIP timestamp
+Fix: delete LoadFromID entirely. resolveProject in cmd/zp/main.go now returns
+a clear error if registry.Find returns nil — no silent fallback, no stale paths.
 
-### New flags
-- --out <dir>        — override output dir per command
-- --path <dir>       — package arbitrary dir without nexus.yaml
+## Files changed
 
-### New filters
-- -pkg               — pkg/ layer only (was missing from v1)
-- -store             — internal/store/ only
-- -config            — internal/config/ + YAML files
-
-### Bug fixes
-- _backups/ dirs now excluded (dirs starting with _ skipped)
-- go.mod + go.sum always included regardless of filter mode
-- nexus.yaml always included in all filter modes
-- runAll now uses dynamic registry scan (no hardcoded list)
-- resolveProject uses registry scan first, falls back to path search
-- WSL2: auto-detects Windows home for engx-drop default path
+- `internal/manifest/manifest.go`  — deleted LoadFromID function
+- `cmd/zp/main.go`                 — removed LoadFromID call from resolveProject
 
 ## Apply
 
-cd ~/workspace/projects/tools/zp
-unzip -o /mnt/c/Users/harsh/Downloads/engx-drop/zp-v2-20260317.zip -d .
-go mod tidy && go build ./...
-go install ./cmd/zp/ && cp ~/go/bin/zp ~/bin/zp
+```bash
+cd ~/workspace/projects/engx/services/zp && \
+unzip -o /mnt/c/Users/harsh/Downloads/engx-drop/zp-fix-manifest-loadfromid-20260320.zip -d . && \
+go build ./...
+```
 
 ## Verify
 
-zp version          # should show 2.0.0
-zp help
+```bash
+go build ./...
+
+# From anywhere in the workspace — should find nexus by registry scan:
 zp list
-zp status
-cd ~/workspace/projects/apps/nexus && zp
-zp nexus -H
-zp all
+zp nexus
+
+# Should give clear error for unknown project (not a path-resolution failure):
+zp doesnotexist
+# Expected: project "doesnotexist" not found — run 'zp list' to see available projects
+```
 
 ## Commit
 
-git add . && git commit -m "feat: zp v2.0.0 — list, status, --out, --path, dynamic discovery" && \
-git tag v2.0.0 && git push origin main --tags
+```bash
+git add \
+  internal/manifest/manifest.go \
+  cmd/zp/main.go \
+  WORKFLOW-SESSION.md && \
+git commit -m "fix(manifest): remove LoadFromID — stale hardcoded paths, registry scan is sufficient" && \
+git push origin main
+```

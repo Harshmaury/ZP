@@ -278,7 +278,7 @@ func runDev(cfg *config.Config, id string) error {
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 
 // resolveProject finds a project root by ID using registry scan.
-// Falls back to manifest.LoadFromID for backwards compat.
+// Returns an error with a helpful message if the project is not found.
 func resolveProject(cfg *config.Config, id string) (root, resolvedID string, err error) {
 	entry, err := registry.Find(cfg.WorkspaceRoot, id)
 	if err != nil {
@@ -287,12 +287,7 @@ func resolveProject(cfg *config.Config, id string) (root, resolvedID string, err
 	if entry != nil {
 		return entry.RootDir, entry.ID, nil
 	}
-	// Fallback: try manifest direct path resolution.
-	m, err := manifest.LoadFromID(cfg.WorkspaceRoot, id)
-	if err != nil {
-		return "", "", fmt.Errorf("project %q not found — run 'zp list' to see available projects", id)
-	}
-	return m.RootDir, m.ID, nil
+	return "", "", fmt.Errorf("project %q not found — run 'zp list' to see available projects", id)
 }
 
 func packageOne(root, id string, filter pack.FilterMode, outDir string) error {

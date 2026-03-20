@@ -39,21 +39,3 @@ func Load(dir string) (*Manifest, error) {
 	m.RootDir = dir
 	return &m, nil
 }
-
-// LoadFromID searches workspaceRoot for a project with the given ID.
-func LoadFromID(workspaceRoot, id string) (*Manifest, error) {
-	// Search common platform project paths.
-	searchDirs := []string{
-		filepath.Join(workspaceRoot, "projects", "apps", id),
-		filepath.Join(workspaceRoot, "projects", "tools", id),
-		filepath.Join(workspaceRoot, "developer-platform"),
-		filepath.Join(workspaceRoot, "projects", "tools", id),
-		filepath.Join(workspaceRoot, id),
-	}
-	for _, dir := range searchDirs {
-		if _, err := os.Stat(filepath.Join(dir, "nexus.yaml")); err == nil {
-			return Load(dir)
-		}
-	}
-	return nil, fmt.Errorf("project %q not found under %s", id, workspaceRoot)
-}

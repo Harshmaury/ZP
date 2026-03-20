@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Harshmaury/ZP/internal/manifest"
+	"github.com/Harshmaury/ZP/internal/registry"
 )
 
 // DevResult is the outcome of a dev isolation operation.
@@ -62,13 +63,13 @@ func CreateDevSandbox(m *manifest.Manifest, workspaceRoot string) (*DevResult, e
 		if dep == "" {
 			continue
 		}
-		depManifest, err := manifest.LoadFromID(workspaceRoot, dep)
-		if err != nil {
+		entry, err := registry.Find(workspaceRoot, dep)
+		if err != nil || entry == nil {
 			// Dependency not found — note it but don't fail.
 			contracts = append(contracts, dep+" (not found)")
 			continue
 		}
-		src := filepath.Join(depManifest.RootDir, "nexus.yaml")
+		src := filepath.Join(entry.RootDir, "nexus.yaml")
 		dst := filepath.Join(contractsDir, dep+"-nexus.yaml")
 		if err := copyFile(src, dst); err == nil {
 			contracts = append(contracts, dep)
