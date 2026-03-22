@@ -5,6 +5,8 @@ package pack
 
 import (
 	"archive/zip"
+
+	"github.com/Harshmaury/ZP/internal/gate"
 	"fmt"
 	"io"
 	"os"
@@ -71,13 +73,22 @@ func BuildMultiZIP(projects []struct{ Root, ID string }, mode FilterMode, outDir
 	zipName := buildZipName(combinedID, mode)
 	zipPath := filepath.Join(outDir, zipName)
 
+	if err := gate.CheckPackaging(projectRoot); err != nil {
+		return nil, err
+	}
+
+	if err := gate.CheckPackaging(projectRoot); err != nil {
+		return nil, err
+	}
+
 	zf, err := os.Create(zipPath)
 	if err != nil {
 		return nil, fmt.Errorf("create zip file: %w", err)
 	}
 	defer zf.Close()
 
-	w := zip.NewWriter(zf)
+	w :=
+ zip.NewWriter(zf)
 	defer w.Close()
 
 	totalFiles := 0
