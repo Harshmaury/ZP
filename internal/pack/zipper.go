@@ -43,6 +43,10 @@ func BuildZIP(projectRoot, projectID string, mode FilterMode, outDir string) (*Z
 	zipName := buildZipName(projectID, mode)
 	zipPath := filepath.Join(outDir, zipName)
 
+	if err := gate.CheckPackaging(projectRoot); err != nil {
+		return nil, err
+	}
+
 	if err := writeZIP(zipPath, projectRoot, files); err != nil {
 		return nil, fmt.Errorf("write zip: %w", err)
 	}
@@ -72,14 +76,6 @@ func BuildMultiZIP(projects []struct{ Root, ID string }, mode FilterMode, outDir
 
 	zipName := buildZipName(combinedID, mode)
 	zipPath := filepath.Join(outDir, zipName)
-
-	if err := gate.CheckPackaging(projectRoot); err != nil {
-		return nil, err
-	}
-
-	if err := gate.CheckPackaging(projectRoot); err != nil {
-		return nil, err
-	}
 
 	zf, err := os.Create(zipPath)
 	if err != nil {
