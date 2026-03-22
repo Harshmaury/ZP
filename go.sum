@@ -1,3 +1,5 @@
+github.com/Harshmaury/Arbiter v0.0.0-20260322151248-152c9c516c55 h1:N27Eeh9nb0qJSM7nWshS5Bs3g7wNQjkiUBTH3lOf8aQ=
+github.com/Harshmaury/Arbiter v0.0.0-20260322151248-152c9c516c55/go.mod h1:uI2UJmdqqEf0pkNuQ6rliGCRxoDQWtU2Fj0R7Ru7FTI=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
