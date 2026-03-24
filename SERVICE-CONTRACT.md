@@ -1,91 +1,58 @@
-# SERVICE-CONTRACT.md — zp
+// @zp-project: zp
+// @zp-path: SERVICE-CONTRACT.md
+# SERVICE-CONTRACT.md — ZP
+# @version: 2.0.0
+# @updated: 2026-03-25
 
-**Service:** zp
-**Domain:** Tool (CLI)
-**Port:** none
-**ADRs:** ADR-019 (packaging tool)
-**Version:** 2.0.0
-**Updated:** 2026-03-18
-
----
-
-## Role
-
-Developer packaging tool. Reads `nexus.yaml`, discovers platform projects,
-and produces consistently named ZIPs for delivery to the engx-drop folder.
-Replaces all manual ZIP creation. Pure filesystem tool — no platform API calls.
+**Type:** CLI tool · **Module:** `github.com/Harshmaury/ZP` · **Domain:** Tool
 
 ---
 
-## Inputs
+## Code
 
-- `nexus.yaml` in project roots — project ID and metadata
-- Workspace filesystem — source files to package
-- `ZP_DROP_DIR` env var — output directory override
-- `ZP_WORKSPACE` env var — workspace root override
-- CLI arguments — project IDs, filter flags, command
-
----
-
-## Outputs
-
-- ZIP files in drop directory: `<project>-<filter>-<YYYYMMDD>-<HHMM>.zip`
-- Console output: project, filter, file count, output path
-- Dev sandbox: `/tmp/zp-dev/<project>-<ts>/` with project copy + contracts
+```
+cmd/zp/main.go              CLI entry, command dispatch
+internal/manifest/manifest.go  nexus.yaml parse -- ProjectManifest
+internal/registry/registry.go  workspace scan -- project discovery
+internal/pack/zipper.go       file collection + ZIP write
+internal/pack/filter.go       -H / -go / -yaml / -api / -core / -pkg / -store / -config
+internal/pack/dev.go          sandbox in /tmp/zp-dev/
+internal/gate/arbiter.go      VerifyPackaging gate -- blocks on violations
+internal/config/config.go     ZP_DROP_DIR, ZP_WORKSPACE env vars
+```
 
 ---
 
-## Commands
+## Contract
 
+**Commands:**
 ```
 zp                    package current project
 zp <id>               package by ID
-zp <id> <id> ...      package multiple → combined ZIP
-zp all                package all workspace projects
-zp list / ls          list all discovered projects
-zp status / st        show projects + last ZIP timestamp
-zp dev <id>           create isolated dev sandbox
-zp version            print version
-zp help               print help
+zp <id> <id> ...      multiple -- combined ZIP
+zp all                all workspace projects
+zp list | ls          list discovered projects
+zp status | st        projects + last ZIP timestamp
+zp dev <id>           sandbox in /tmp/zp-dev/
+zp version / help
 ```
 
-## Filters
+**ZIP naming:** `<project>-<filter>-<YYYYMMDD>-<HHMM>.zip`
 
-`-H` handlers · `-go` Go files · `-yaml` YAML · `-api` API layer ·
-`-core` core logic · `-pkg` pkg/ · `-store` store/ · `-config` config + YAML
+**Always included:** `go.mod`, `go.sum`, `nexus.yaml`, `.zpignore`, `WORKFLOW-SESSION.md`
 
-## Flags
+**Always excluded:** directories starting with `_` or `.`
 
-`--out <dir>` · `--path <dir>`
-
----
-
-## Dependencies
-
-None. zp makes no HTTP calls to any platform service.
-It reads only the local filesystem and `nexus.yaml` files.
+**Arbiter gate:** `VerifyPackaging(dir)` runs before any ZIP is written. `--skip-enforce` bypasses and emits `SYSTEM_ALERT` to Nexus.
 
 ---
 
-## Guarantees
+## Control
 
-- ZIP naming convention is always enforced — no manual naming.
-- `go.mod`, `go.sum`, `nexus.yaml`, `.zpignore` always included regardless of filter.
-- Directories starting with `_` or `.` are always excluded.
-- `zp all` uses dynamic registry scan — no hardcoded project list.
-- Registry scan is a point-in-time snapshot — projects modified during
-  `zp all` may be skipped with an error (expected, non-fatal).
+Single-threaded CLI. No platform API calls during normal operation. Registry scan is point-in-time.
 
-## Non-Responsibilities
+---
 
-- zp does not communicate with Nexus, Atlas, Forge, or any observer.
-- zp does not register projects, start services, or trigger workflows.
-- zp does not modify any platform database.
+## Context
 
-## Data Authority
-
-None. zp is a read-and-package tool. It produces ZIPs, not platform state.
-
-## Concurrency Model
-
-Single-threaded CLI. No concurrent operations.
+No HTTP calls to any platform service. Read-and-package only.
